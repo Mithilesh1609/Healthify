@@ -1,0 +1,340 @@
+CREATE TABLE customer(customer_id varchar(6) primary key, f_name varchar(20),m_name varchar(20), l_name varchar(20), city varchar(20), state varchar(20), country varchar(20), bdate date, age int, contact_no varchar(10), email_id varchar(40), gender varchar(6), username varchar(20), password varchar(8));
+
+CREATE TABLE category(category_id varchar(5) primary key,name varchar(20));
+
+CREATE TABLE food_item(food_id varchar(6) PRIMARY KEY, name varchar(50), category varchar(15), category_id varchar(5) references category(category_id));
+
+CREATE TABLE restaurant(restaurant_id varchar(6) PRIMARY KEY, name varchar(50), rating float, contact_no varchar(10), website varchar(500), email varchar(30));
+
+CREATE TABLE Menu(food_id varchar(6) REFERENCES food_item(food_id),restaurant_id varchar(6) REFERENCES restaurant(restaurant_id),price int,avalability int, rating float,primary key (food_id,restaurant_id));
+
+CREATE TABLE Reviews(review_id int PRIMARY KEY,restaurant_id varchar(6) REFERENCES restaurant(restaurant_id), customer_id varchar(5) REFERENCES customer(customer_id), food_id varchar(6) REFERENCES food_item(food_id), detailed_review varchar(500));
+
+CREATE TABLE Favourite_food(food_id varchar(6) REFERENCES food_item(food_id), customer_id varchar(6) REFERENCES customer(customer_id),primary key (food_id, customer_id));
+
+CREATE TABLE favourite_restaurant(customer_id varchar(5) REFERENCES customer(customer_id), restaurant_id varchar(6) REFERENCES restaurant(restaurant_id),primary key (restaurant_id, customer_id));
+
+CREATE TABLE Cart(customer_id varchar(6) REFERENCES customer(customer_id), restaurant_id varchar(6) REFERENCES restaurant(restaurant_id), food_id varchar(6) REFERENCES food_item(food_id),quantity int,primary key (restaurant_id, customer_id));
+
+CREATE TABLE Orders(order_id int primary key, customer_id varchar(6) REFERENCES customer(customer_id), date_time timestamp);
+
+CREATE TABLE Payments(payment_id int PRIMARY KEY, customer_id varchar(6) REFERENCES customer(customer_id), order_id int REFERENCES orders(order_id), payable_amount float, payment_mode varchar(10), saved_amount float);
+
+CREATE TABLE order_content(order_id int REFERENCES orders(order_id), restaurant_id varchar(6) REFERENCES restaurant(restaurant_id), food_id varchar(6) REFERENCES food_item(food_id), payment_id int REFERENCES Payments(payment_id) , quantity int, address varchar(50), PRIMARY KEY (food_id,order_id));
+
+CREATE TABLE ingredients(ingredient_id int PRIMARY KEY, ingredient_name varchar(30), carbs float, fat float, fiber float, protine float, calory float);
+
+CREATE TABLE recipe(food_id varchar(6) REFERENCES food_item(food_id), ingredient_id int REFERENCES ingredients(ingredient_id),quantity float,primary key (food_id,ingredient_id));
+
+CREATE TABLE coupons(coupon_id varchar(20) PRIMARY KEY, coupon_discription varchar(200), discount_per int);
+
+CREATE TABLE offers(restaurant_id varchar(6) PRIMARY KEY REFERENCES restaurant(restaurant_id), offer_code varchar(10), discount_per int);
+
+customers
+-------------------------------------------------------------------------------------------------------------------------------
+INSERT INTO customer VALUES ('C_3', 'Yagnik', 'Bharatbhai', 'Hingarajiya', 'Rajkot', 'Gujarat', 'India', '06-05-2000', '19', '5556668889', 'yagnik.h@ahduni.edu.in','male', 'yagnik56', 'yh');
+INSERT INTO customer VALUES ('C_1', 'Prince', 'Amarshibhai', 'Dalsaniya', 'Rajkot', 'Gujarat', 'India', '09-14-2001', '18', '9558867506', 'prince.d@ahduni.edu.in', 'male','p', 'pri');
+INSERT INTO customer VALUES ('C_2', 'Mithilesh', 'Parthbhai', 'Thakkar', 'Gandhinagar', 'Gujarat', 'India', '09-16-2001', '18', '9999999999', 'mithilesh.t@ahduni.edu.in', 'male','m', 'mit');
+
+Orders
+-------------------------------------------------------------------------------------------------------------------------------------------
+INSERT INTO orders VALUES (166,'C_1',Null);
+INSERT INTO payments VALUES (5601,'C_1',166,2030,'debitcard',512);
+INSERT INTO order_content VALUES (166,'R10001', 'f1001', 5601,2, 'Rajkot');
+INSERT INTO order_content VALUES (166,'R10001', 'f1003', 5601,1, 'Rajkot');
+
+ingredients
+---------------------------------------------------------------------------------------------------------
+insert all
+  into ingredients values (101,'panner',2,20,0,23,265)
+  into ingredients values (102,'Kaju',30,44,5,18,553)
+  into ingredients values (103,'curd',3.4,4.3,0.0,11.0,98.0)
+  into ingredients values (104,'potato',17,10,1.6,2,77)
+  into ingredients values (105,'carrot',4.5,1,2.8,1,41)
+  into ingredients values (106,'pea',14,0.4,5.7,5,81)
+  into ingredients values (107,'rice',52,10,2,5,65)
+  into ingredients values (108,'dal_fry',24,5.3,4,10.2,191.4)
+  into ingredients values (109,'tomato',0,0,1.3,0.9,18)
+  into ingredients values (110,'onion',9,0.1,2.5,1.1,40)
+  into ingredients values (111,'pepperoni',0,44,0,23,494)
+  into ingredients values (112,'cheese',1.3,33,0,25,371)
+  into ingredients values (113,'sambhar',2,14,4.1,4,112)
+  into ingredients values (114,'coconut chutney',13.6,33.2,11,3.6,349)
+  into ingredients values (115,'olive oil',0,100,0,0,884)
+  into ingredients values (116,'yeast',18,1.9,0,8,325)
+  into ingredients values (117,'peanut',16,49,9,26,568)
+  into ingredients values (118,'coco powder',57.9,13.7,0,19.6,228)
+  into ingredients values (119,'chocolate',28,11,1.2,3.8,216)
+  into ingredients values (120,'chocochips',61,27,0,5,519)
+  into ingredients values (121,'flour',76,1,2.7,10,370)
+  into ingredients values (122,'sugar',100,0,0,0.1,379)
+  into ingredients values (123,'milk',11.7,7.9,0.8,7.7,149)
+  into ingredients values (124,'cream',3.7,19,0,2.7,196)
+  into ingredients values (125,'pineapple',13,0.1,1.4,0.5,50)
+  into ingredients values (126,'vanilla',13,0.1,0,0.1,288)
+  into ingredients values (127,'strawberry',8,0.3,2,0.7,33)
+  into ingredients values (128,'banana',23,0.39,2.6,1.1,89)
+  into ingredients values (129,'butter',0.1,81,0,0.9,717)
+  into ingredients values (130,'oreo cookie',21,6,1,1,140)
+  into ingredients values (131,'egg yolks',0,4.5,0,2.7,55)
+  into ingredients values (132,'dosa',18.6,0.2,1.5,2.8,86)
+  into ingredients values (133,'vada',8.9,5.2,1.8,3.6,94)
+  into ingredients values (134,'idlli',7.2,0.1,0.3,1,33)
+  into ingredients values (135,'chappati',15,0.4,0.5,3,70)
+  into ingredients values (136,'butter Naan',14.1,3,0.1,2.2,93)
+select * from dual;
+
+category
+---------------------------------------------------------------------------------------------------------------------------
+INSERT all
+  INTO category VALUES('Cat_1', 'Dessert')
+  INTO category VALUES('Cat_2', 'South Indian')
+  INTO category VALUES('Cat_3', 'Italian')
+  INTO category VALUES('Cat_4', 'Punjabi')
+  INTO category VALUES('Cat_5', 'Gujarati')
+select * from dual;
+
+food_item
+----------------------------------------------------------------------------------------------------------
+insert all
+  into food_item values ('f1001','Butter Cup icecream','Dessert')
+  into food_item values ('f1002','Chocochip cookie icecream','Dessert')
+  into food_item values ('f1003','Chocolate icecream','Dessert')
+  into food_item values ('f1004','Cookie and cream icecream','Dessert')
+  into food_item values ('f1005','Malted Vanilla with peanut icecream','Dessert')
+  into food_item values ('f1006','Tin Roof icecream','Dessert')
+  into food_item values ('f1007','vada sambhar','south indian')
+  into food_item values ('f1008','Idlli sambhar','south indian')
+  into food_item values ('f1009','Dosa','south indian')
+  into food_item values ('f1010','Masala dosa','south indian')
+  into food_item values ('f1011','Maysore masala dosa','south indian')
+  into food_item values ('f1012','Veg Biriyani','Rice')
+  into food_item values ('f1013','Pepprtoni and Pink Sauce Pizza','Italian')
+  into food_item values ('f1014','Chicago style pizza','Italian')
+  into food_item values ('f1015','Nepolian style pizza','Italian')
+  into food_item values ('f1016','Roman style pizza','Italian')
+  into food_item values ('f1017','Paneer Kofta Naan','Punjabi')
+  into food_item values ('f1018','Paneer Bhurji Naan','Punjabi')
+  into food_item values ('f1019','Paneer Kofta Chappati','Gujarati')
+  into food_item values ('f1020','Paneer Bhurji Chappati','Gujrati')
+  into food_item values ('f1021','Dal rice','Gujarati')
+select * from dual;
+
+recipe
+----------------------------------------------------------------------------------------------------------------
+insert all
+  into recipe values ('f1001',130,20)
+  into recipe values ('f1001',129,0.04)
+  into recipe values ('f1001',128,0.71)
+  into recipe values ('f1001',127,6.01)
+  into recipe values ('f1001',119,4.73)
+  into recipe values ('f1001',126,4.77)
+  into recipe values ('f1001',125,0.64)
+  into recipe values ('f1001',124,1.28)
+  into recipe values ('f1001',122,0.3)
+
+  into recipe values ('f1002',123,1.28)
+  into recipe values ('f1002',122,1.92)
+  into recipe values ('f1002',124,2.86)
+  into recipe values ('f1002',131,6)
+  into recipe values ('f1002',126,0.1)
+  into recipe values ('f1002',129,0.64)
+  into recipe values ('f1002',121,0.48)
+  into recipe values ('f1002',120,0.28)
+
+  into recipe values ('f1003',124,2.56)
+  into recipe values ('f1003',118,0.45)
+  into recipe values ('f1003',119,1.4)
+  into recipe values ('f1003',123,1.28)
+  into recipe values ('f1003',122,0.48)
+  into recipe values ('f1003',131,5)
+  into recipe values ('f1003',126,0.1)
+
+  into recipe values ('f1004',131,5)
+  into recipe values ('f1004',122,0.64)
+  into recipe values ('f1004',124,2.24)
+  into recipe values ('f1004',123,0.96)
+  into recipe values ('f1004',126,0.1)
+  into recipe values ('f1004',130,15)
+
+  into recipe values ('f1005',131,5)
+  into recipe values ('f1005',123,1.28)
+  into recipe values ('f1005',124,2.24)
+  into recipe values ('f1005',122,0.64)
+  into recipe values ('f1005',126,0.05)
+  into recipe values ('f1005',117,0.64)
+
+  into recipe values ('f1006',123,0.96)
+  into recipe values ('f1006',122,0.64)
+  into recipe values ('f1006',124,1.92)
+  into recipe values ('f1006',126,0.96)
+  into recipe values ('f1006',131,4)
+  into recipe values ('f1006',119,1.12)
+  into recipe values ('f1006',118,0.9)
+  into recipe values ('f1006',117,1.28)
+
+  into recipe values ('f1007',133,2)
+  into recipe values ('f1007',113,1.92)
+  into recipe values ('f1007',114,0.96)
+
+  into recipe values ('f1008',134,2)
+  into recipe values ('f1008',113,1.92)
+  into recipe values ('f1008',114,0.96)
+
+  into recipe values ('f1009',132,1)
+  into recipe values ('f1009',113,1.92)
+  into recipe values ('f1009',114,0.96)
+
+  into recipe values ('f1010',132,1)
+  into recipe values ('f1010',113,1.92)
+  into recipe values ('f1010',114,0.96)
+  into recipe values ('f1010',104,0.64)
+
+  into recipe values ('f1011',132,1)
+  into recipe values ('f1011',113,1.92)
+  into recipe values ('f1011',114,0.96)
+  into recipe values ('f1011',104,0.48)
+  into recipe values ('f1011',109,0.16)
+  into recipe values ('f1011',101,0.16)
+
+  into recipe values ('f1012',107,1.28)
+  into recipe values ('f1012',110,0.35)
+  into recipe values ('f1012',109,0.35)
+  into recipe values ('f1012',115,0.3)
+  into recipe values ('f1012',103,0.3)
+  into recipe values ('f1012',104,0.35)
+  into recipe values ('f1012',105,0.35)
+  into recipe values ('f1012',106,0.42)  
+
+  into recipe values ('f1013',115,0.3)
+  into recipe values ('f1013',116,3.2)
+  into recipe values ('f1013',121,5.74)
+  into recipe values ('f1013',122,0.15)
+  into recipe values ('f1013',109,1.28)
+  into recipe values ('f1013',124,0.3)
+  into recipe values ('f1013',112,3.36)
+  into recipe values ('f1013',111,0.84)
+  into recipe values ('f1013',110,1.28)
+
+  into recipe values ('f1014',129,0.45)
+  into recipe values ('f1014',115,0.45)
+  into recipe values ('f1014',116,3.2)
+  into recipe values ('f1014',121,5.74)
+  into recipe values ('f1014',122,0.15)
+  into recipe values ('f1014',112,1.96)
+  into recipe values ('f1014',109,1.28)
+
+  into recipe values ('f1015',112,1.96)
+  into recipe values ('f1015',115,0.3)
+  into recipe values ('f1015',116,3.2)
+  into recipe values ('f1015',121,5.74)
+  into recipe values ('f1015',122,0.15)
+  into recipe values ('f1015',109,0.6)
+
+  into recipe values ('f1016',112,4.24)
+  into recipe values ('f1016',115,0.3)
+  into recipe values ('f1016',116,3.2)
+  into recipe values ('f1016',121,5.74)
+  into recipe values ('f1016',122,0.15)
+  into recipe values ('f1016',104,0.65)
+
+  into recipe values ('f1017',101,1.28)
+  into recipe values ('f1017',104,1.28)
+  into recipe values ('f1017',121,0.32)
+  into recipe values ('f1017',102,0.12)
+  into recipe values ('f1017',115,0.4)
+  into recipe values ('f1017',110,0.35)
+  into recipe values ('f1017',109,0.35)
+  into recipe values ('f1017',136,2)
+
+  into recipe values ('f1018',101,1.28)
+  into recipe values ('f1018',115,0.4)
+  into recipe values ('f1018',110,0.35)
+  into recipe values ('f1018',109,0.35)
+  into recipe values ('f1018',136,2)
+
+  into recipe values ('f1019',101,1.28)
+  into recipe values ('f1019',104,1.28)
+  into recipe values ('f1019',121,0.32)
+  into recipe values ('f1019',102,0.12)
+  into recipe values ('f1019',115,0.4)
+  into recipe values ('f1019',110,0.35)
+  into recipe values ('f1019',109,0.35)
+  into recipe values ('f1019',135,5)
+
+  into recipe values ('f1020',101,1.28)
+  into recipe values ('f1020',115,0.4)
+  into recipe values ('f1020',110,0.35)
+  into recipe values ('f1020',109,0.35)
+  into recipe values ('f1020',135,5)
+
+  into recipe values ('f1021',107,1.92)
+  into recipe values ('f1021',108,1.92)
+select * from dual;
+
+restaurant
+-----------------------------------------------------------------------------------------------
+insert all  
+ INTO restaurant VALUES ('R10001', 'Mocha', '4.9', '9725200002', 'https://www.mocha.co.in/locations/mocha-ahmedabad.html', 'franchise@mocha.co.in');
+ INTO restaurant VALUES ('R10002', 'Buttercupp', '4.7', '7940325838', 'https://www.zomato.com/ahmedabad/buttercupp-vastrapur', NULL);
+ INTO restaurant VALUES ('R10003', 'Old School', '4.5', '9825841001', 'https://www.zomato.com/ahmedabad/old-school-satellite', 'oldschooleatery@gmail.com');
+ INTO restaurant VALUES ('R10004', 'Sasuji', '4.1', '7926405066', 'https://sasuji.in/', 'sasuji@sasuji.in');
+ INTO restaurant VALUES ('R10005', 'Farki', '4.5', '7490947402', 'http://farki.in/', 'info@farki.in');
+ INTO restaurant VALUES ('R10006', 'Domino Pizza', '3.8', '7930113800', 'https://www.dominos.co.in/', 'guestcaredominos@jublfood.com');
+ INTO restaurant VALUES ('R10007', 'Nini Kitchen', '4.5', '8860640879', 'https://nrai.org/contact-us/', 'info@nrai.org');
+select * from dual;
+
+
+menu
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+insert all
+  into Menu values ('f1001','R10001',115,1)
+  into Menu values ('f1003','R10001',110,1)
+  into Menu values ('f1004','R10001',140,1)
+  into Menu values ('f1006','R10001',95,1)
+
+  into Menu values ('f1001','R10002',120,1)
+  into Menu values ('f1002','R10002',140,1)
+  into Menu values ('f1003','R10002',100,1)
+  into Menu values ('f1004','R10002',135,1)
+  into Menu values ('f1005','R10002',150,1)
+
+  into Menu values ('f1017','R10003',125,1)
+  into Menu values ('f1018','R10003',115,1)
+  into Menu values ('f1019','R10003',120,1)
+  into Menu values ('f1021','R10003',90,1)
+  into Menu values ('f1020','R10003',110,1)
+
+  into Menu values ('f1017','R10004',95,1)
+  into Menu values ('f1018','R10004',90,1)
+  into Menu values ('f1019','R10004',80,1)
+  into Menu values ('f1021','R10004',60,1)
+  into Menu values ('f1020','R10004',75,1)
+  into Menu values ('f1012','R10004',65,1)
+
+  into Menu values ('f1007','R10005',50,1)
+  into Menu values ('f1008','R10005',40,1)
+  into Menu values ('f1009','R10005',60,1)
+  into Menu values ('f1010','R10005',70,1)
+  into Menu values ('f1011','R10005',75,1)
+  into Menu values ('f1012','R10005',65,1)
+
+  into Menu values ('f1013','R10006',265,1)
+  into Menu values ('f1014','R10006',230,1)
+  into Menu values ('f1015','R10006',210,1)
+  into Menu values ('f1016','R10006',250,1)
+
+  into Menu values ('f1007','R10007',60,1)
+  into Menu values ('f1008','R10007',50,1)
+  into Menu values ('f1009','R10007',70,1)
+  into Menu values ('f1010','R10007',80,1)
+  into Menu values ('f1011','R10007',85,1)
+  into Menu values ('f1012','R10007',75,1)
+  into Menu values ('f1017','R10007',105,1)
+  into Menu values ('f1018','R10007',100,1)
+  into Menu values ('f1019','R10007',90,1)
+  into Menu values ('f1021','R10007',70,1)
+  into Menu values ('f1020','R10007',85,1)
+select * from dual;
+
+

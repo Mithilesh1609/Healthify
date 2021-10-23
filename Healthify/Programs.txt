@@ -1,0 +1,416 @@
+create or replace procedure fetch_order(day int,c_id varchar) as
+      cursor c_Orders is select * from Orders;
+      cursor c_Payments is select * from Payments;
+      r_Orders c_Orders%rowtype;
+      r_Payments c_Payments%rowtype;
+      t_date date;
+      o_time date;
+begin
+      open c_Orders;
+      loop
+             fetch c_Orders into r_Orders;
+             if c_Orders%notfound then exit;
+             end if;
+             open c_Payments;
+             loop
+                 fetch c_Payments into r_Payments;
+                 if c_Payments%notfound then exit;
+                 end if;
+                 select sysdate into t_date from dual;
+                 if(r_Orders.order_id=r_Payments.order_id and (t_date - day)< to_date(to_char(r_Orders.date_time,'MM-DD-YYYY'),'MM-DD-YYYY') and r_Order.customer_id=c_id)then 
+                    dbms_output.put_line(r_Orders.order_id||'  '|| r_Payments.payment_id||'  '||r_Payments.payable_amount||'  '||r_Payments.payment_mode||'  '||r_Payments.saved_amount);
+                 end if;  
+             end loop;        
+             close c_Payments;
+      end loop;        
+      close c_Orders;
+end;
+
+--------------------------------------------------------------------------------------------------------------------
+
+create or replace procedure disp_order(id int) as
+     cursor c_order_content is select * from order_content where order_id=id ;
+     r_Order_content c_Order_content%rowtype;
+     food_name varchar(25);
+     rest_name varchar(25);
+     price int:=0;
+     Tprice int:=0;
+begin
+      open c_Order_content;
+      loop
+             fetch c_Order_content into r_Order_content;
+             if c_Order_content%notfound then exit;
+             end if;
+             if(r_Order_content.order_id=id)then
+                 select food_item.name into food_name from food_item where food_item.food_id= r_Order_content.food_id;
+                 select restaurant.name into rest_name  from restaurant where restaurant.restaurant_id= r_Order_content.restaurant_id;
+                 select menu.price into price from menu where menu.food_id= r_Order_content.food_id and menu.restaurant_id=r_Order_content.restaurant_id;
+                 dbms_output.put_line('item:'||food_name||'  Quantity:'||r_Order_content.quantity||'  Price:'||price);
+                 Tprice:= Tprice + (r_Order_content.quantity * price);
+             end if;       
+      end loop;        
+      close c_Order_content;
+      dbms_output.put_line('--------------------------------------------------------------------------------------------------');
+      dbms_output.put_line('Order Id:'||r_Order_content.order_id||'  Restaurant name: '|| rest_name||'  Total amount:'||Tprice);
+end;
+declare
+begin
+   disp_order(166);
+end;
+
+
+--------------------------------------------------------------------------------------------------------
+
+create or replace procedure Login() as
+      cursor c_customer is select * from customer;
+      r_customer c_customer%rowtype;
+      Username varchar(20):=:Username;
+      password varchar(8):=password;
+begin
+      open c_customer;
+      loop
+             fetch c_customer into r_customer;
+             if c_customer%notfound then exit;
+             end if;
+             if(username=r_customer.username)then
+                if(password=r_customer.password)then
+                  dbms_output.put_line('successfully logged in');
+                else
+                  dbms_output.put_line('password does not match');
+                end if;
+             else
+               dbms_output.put_line('no username password');
+             end if;
+      end loop;        
+      close c_customer;
+end;
+
+
+-------------------------------------------------------------------------------------------------------------
+
+create or replace procedure fetch_favourite_restaurant(c_id varchar(6)) as
+      cursor c_favourite_restaurant is select * from favourite_restaurant;
+      cursor c_Order_content is select * from Order_content where order_id=(select order_id from orders where customer_id=c_id);
+      r_favourite_restaurant c_favourite_restaurant%rowtype;
+      r_Order_content c_Order_content%rowtype;
+      rest_name varchar(30);
+      cnt_odr int:=0;
+      rtng float:=0;
+begin
+      open c_favourite_restaurant;
+      loop
+             fetch c_favourite_restaurant into r_favourite_restaurant;
+             if c_favourite_restaurant%notfound then exit;
+             end if;
+             open c_Order_content;
+             loop
+                 fetch c_Order_content into r_Order_content;
+                 if c_Order_content%notfound then exit;
+                 end if;
+                 if(r_favourite_restaurant.restaurant_id=r_Order_content.restaurant_id)then 
+                    select count(r_Order_content.order_id) into cnt_odr from Order_content where r_Order_content.restaurant_id=r_favourite_restaurant.restaurant_id;
+                    select restaurant.name,restaurant.rating into rest_name,rtng from restaurant where r_Order_content.restaurant_id=restaurant.restaurant_id;                    
+                    dbms_output.put_line((r_favourite_restaurant.restaurant_id||'   '||rest_name||'   '||rtng||'  '||cnt_odr);
+                 end if;  
+             end loop;        
+             close c_Order_content;
+      end loop;        
+      close c_favourite_restaurant;
+end;
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+create or replace procedure  fetch_favourite_food(c_id varchar(6)) as
+      cursor c_favourite_food is select * from favourite_favourite_food;
+      cursor c_Order_content is select * from Order_content where order_id=(select order_id from orders where customer_id=c_id);
+      r_favourite_food c_favourite_food%rowtype;
+      r_Order_content c_Order_content%rowtype;
+      food_name varchar(30):='';
+      cnt_odr int:=0;
+      ctgry varchar(15):=' ';
+begin
+      open c_favourite_food;
+      loop
+             fetch c_favourite_food into r_favourite_food;
+             if c_favourite_food%notfound then exit;
+             end if;
+             open c_Order_content;
+             loop
+                 fetch c_Order_content into r_Order_content;
+                 if c_Order_content%notfound then exit;
+                 end if;
+                 if(r_favourite_food.food_id=r_Order_content.food_id)then 
+                    select count(r_Order_content.order_id) into cnt_odr from r_Order_content where r_Order_content.food_id=r_favourite_food.food_id;
+                    select food_item.name,food_item.category into food_name,ctgry from food_name where r_Order_content.food_id=food_name.food_id;
+                    dbms_output.put_line((r_favourite_food.food_id||'   '||food_name||'   '||cnt_odr||' '||ctgry);
+                 end if;  
+             end loop;        
+             close c_Order_content;
+      end loop;        
+      close c_favourite_food;
+end;
+------------------------------------------------------------------------------------------------------------------------------------------------------
+create or replace function disp_res_nm(id varchar) return varchar2 as
+     nm varchar(20):=''; 
+begin
+     select restaurant.name into nm from restaurant where restaurant.restaurant_id=id;
+     return nm;
+end;
+
+create or replace function disp_food_nm(id varchar) return varchar2 as
+     nm varchar(30):=''; 
+begin
+     select food_item.name into nm from food_item where food_item.food_id=id;
+     return nm;
+end;
+---------------------------------------------------------------------------------------------------------------
+
+create or replace procedure fetch_all_restaurants as
+      cursor c_restaurant is select * from restaurant order by rating desc;
+      r_restaurant c_restaurant%rowtype;
+begin
+      open c_restaurant;
+      loop
+             fetch c_restaurant into r_restaurant;
+             if c_restaurant%notfound then exit;
+             end if;
+               dbms_output.put_line(r_restaurant.name||' '||r_restaurant.rating);
+      end loop;        
+      close c_restaurant;
+end;
+
+------------------------------------------------------------------------------------------------------------------
+
+create or replace procedure fetch_all_offers as
+      cursor c_offers is select * from offers;
+      r_offers c_offers%rowtype;
+begin
+      open c_offers;
+      loop
+             fetch c_offers into r_offers;
+             if c_offers%notfound then exit;
+             end if;
+             dbms_output.put_line('------------------------------------------------------------------------------------------------');
+             dbms_output.put_line('Offer code:'||r_offers.offer_id);
+             dbms_output.put_line('Description'||r_offers.Description);       
+      end loop;        
+      close c_offers;
+end;
+
+-------------------------------------------------------------------------------------------------------------
+
+create or replace procedure fetch_all_cart_items(customer_id varchar) as
+      cursor c_Cart is select * from Cart;
+      r_Cart c_Cart%rowtype;
+      food_name varchar(30);
+      Rest_name varchar(25);
+      price int:=0;
+      Tprice int:=0;
+      bill_amount int:=0;
+      Tax float:=0;
+begin
+      open c_Cart;
+      loop
+             fetch c_Cart into r_Cart;
+             if c_Cart%notfound then exit;
+             end if;
+             if r_Cart.customer_id=customer_id then
+                select food_item.name into food_name from food_item where food_item.food_id=r_Cart.food_id;
+                select restaurant.name into Rest_name from restaurant where restaurant.restaurant_id=r_Cart.restaurant_id;
+                select Menu.price into price from Menu where Menu.food_id=r_Cart.food_id and Menu.restaurant_id=r_Cart.restaurant_id;
+                dbms_output.put_line(food_name||' - '||price);
+                dbms_output.put_line('from:'||food_name);
+                Tprice:=price*r_Cart.quantity;
+                dbms_output.put_line('Quantity:'||r_Cart.quantity||'  Total price:'||Tprice);
+                bill_amount:= bill_amount + Tprice;
+                dbms_output.put_line('----------------------------------------------------------------------------------------------');
+             end if;       
+      end loop;        
+      close c_Cart;
+      dbms_output.put_line('Bill amount:'||bill_amount);
+      Tax:=bill_amount*0.18;
+      dbms_output.put_line('Tax:'||Tax);
+      dbms_output.put_line('Bill amount with tax:'||bill_amount+Tax);
+end;
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+create or replace procedure disp_res_inf(id varchar) as
+      cursor c_restaurant is select * from restaurant where restaurant_id=id;
+      r_restaurant c_restaurant%rowtype;
+      cursor c_menu is select * from menu where restaurant_id=id;
+      r_menu c_menu%rowtype;
+      cursor c_category is select * from category;
+      r_category c_category%rowtype;
+      food_name varchar(25);
+begin
+      open c_restaurant;
+      loop
+             fetch c_restaurant into r_restaurant;
+             if c_restaurant%notfound then exit;
+             end if;
+             if(r_restaurant.restaurant_id = id)then
+                dbms_output.put_line('Restaurant Name: '||r_restaurant.name);
+                dbms_output.put_line('Rating: '|| r_restaurant.rating);
+                dbms_output.put_line('Phone Number: '||r_restaurant.contact_no);
+                dbms_output.put_line('website: '||r_restaurant.website);
+                dbms_output.put_line('Email no: '||r_restaurant.email);
+                dbms_output.put_line(' ');
+                dbms_output.put_line('Menu');
+             end if;
+             open c_menu;
+             loop
+                 fetch c_menu into r_menu;
+                 if c_menu%notfound then exit;
+                 end if;
+                 dbms_output.put_line('-----------------------------------------------------------------');
+                 select food_item.name into food_name from food_item where r_menu.food_id=food_item.food_id; 
+                 dbms_output.put_line(food_name||':- '||r_menu.price);
+             end loop;
+             close c_menu;
+      end loop;
+      close c_restaurant;
+end;
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+create or replace procedure disp_nutri(id varchar) as
+      cursor c_food_item is select * from food_item where food_id=id;
+      r_food_item c_food_item%rowtype;
+      cursor c_recipe is select * from recipe where food_id=id;
+      r_recipe c_recipe%rowtype;
+      cursor c_ingredients is select * from ingredients;
+      r_ingredients c_ingredients%rowtype;
+      fat float:=0;
+      Carb float:=0;
+      fiber float:=0;
+      protein float:=0;
+      calory float:=0;
+begin
+      open c_food_item;
+      loop
+             fetch c_food_item into r_food_item;
+             if c_food_item%notfound then exit;
+             end if;
+             open c_recipe;
+             loop
+                 fetch c_recipe into r_recipe;
+                 if c_recipe%notfound then exit;
+                 end if;
+                 open c_ingredients;
+                 loop
+                     fetch c_ingredients into r_ingredients;
+                     if c_ingredients%notfound then exit;
+                     end if;
+                     if(r_food_item.food_id=r_recipe.food_id and r_recipe.ingredient_id=r_ingredients.ingredient_id)then
+                        fat := fat + (r_ingredients.fat*r_recipe.quantity);
+                        Carb := Carb + (r_ingredients.carbs*r_recipe.quantity);
+                        fiber := fiber + (r_ingredients.fiber*r_recipe.quantity);
+                        protein := protein + (r_ingredients.protine*r_recipe.quantity);
+                        calory := calory + (r_ingredients.calory*r_recipe.quantity);
+                     end if;
+                 end loop;
+                 close c_ingredients;
+             end loop;
+             close c_recipe;
+      end loop;
+      close c_food_item;
+      dbms_output.put_line('Total Nutrition:');
+      dbms_output.put_line('fat:'||fat||'  Carb:'||Carb||'  fiber:'||fiber||'  protein:'||protein||'  calories:'||calory);
+end;
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+create or replace procedure disp_order_nutri(id int) as
+      cursor c_order_content is select * from order_content where order_id=id;
+      r_order_content c_order_content%rowtype;
+      cursor c_recipe is select * from recipe;
+      r_recipe c_recipe%rowtype;
+      cursor c_ingredients is select * from ingredients;
+      r_ingredients c_ingredients%rowtype;
+      fat float:=0;
+      Carb float:=0;
+      fiber float:=0;
+      protein float:=0;
+      calory float:=0;
+      Tprice int:=0;
+begin
+      open c_order_content;
+      loop
+             fetch c_order_content into r_order_content;
+             if c_order_content%notfound then exit;
+             end if;
+             open c_recipe;
+             loop
+                 fetch c_recipe into r_recipe;
+                 if c_recipe%notfound then exit;
+                 end if;
+                 open c_ingredients;
+                 loop
+                     fetch c_ingredients into r_ingredients;
+                     if c_ingredients%notfound then exit;
+                     end if;
+                     if(r_order_content.food_id=r_recipe.food_id and r_recipe.ingredient_id=r_ingredients.ingredient_id)then
+                        fat := fat + (r_ingredients.fat*r_recipe.quantity * r_order_content.quantity);
+                        Carb := Carb + (r_ingredients.carbs*r_recipe.quantity * r_order_content.quantity);
+                        fiber := fiber + (r_ingredients.fiber*r_recipe.quantity * r_order_content.quantity);
+                        protein := protein + (r_ingredients.protine*r_recipe.quantity * r_order_content.quantity);
+                        calory := calory + (r_ingredients.calory*r_recipe.quantity * r_order_content.quantity);
+                     end if;
+                 end loop;
+                 close c_ingredients;
+             end loop;
+             close c_recipe;
+      end loop;
+      close c_order_content;
+      dbms_output.put_line('Total Nutrition from order:');
+      dbms_output.put_line('fat:'||fat||'  Carb:'||Carb||'  fiber:'||fiber||'  protein:'||protein||'  calories:'||calory);
+      select Payments.payable_amount into Tprice from Payments where Payments.order_id=id;
+      dbms_output.put_line('Total Nutrition from order per 1 Rupee:');
+      dbms_output.put_line('fat:-'||fat/Tprice||'  Carb:-'||Carb/Tprice||'  fiber:-'||fiber/Tprice||'  protein:-'||protein/Tprice||'  calories:-'||calory/Tprice);
+end;
+declare
+begin
+   disp_order_nutri(166);
+end;
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+create or replace procedure disp_nutri(id varchar) as
+      cursor c_recipe is select * from recipe where food_id=id;
+      r_recipe c_recipe%rowtype;
+      cursor c_ingredients is select * from ingredients;
+      r_ingredients c_ingredients%rowtype;
+      fat float:=0;
+      Carb float:=0;
+      fiber float:=0;
+      protein float:=0;
+      calory float:=0;
+begin
+             open c_recipe;
+             loop
+                 fetch c_recipe into r_recipe;
+                 if c_recipe%notfound then exit;
+                 end if;
+                 open c_ingredients;
+                 loop
+                     fetch c_ingredients into r_ingredients;
+                     if c_ingredients%notfound then exit;
+                     end if;
+                     if(id=r_recipe.food_id and r_recipe.ingredient_id=r_ingredients.ingredient_id)then
+                        fat := fat + (r_ingredients.fat*r_recipe.quantity);
+                        Carb := Carb + (r_ingredients.carbs*r_recipe.quantity);
+                        fiber := fiber + (r_ingredients.fiber*r_recipe.quantity);
+                        protein := protein + (r_ingredients.protine*r_recipe.quantity);
+                        calory := calory + (r_ingredients.calory*r_recipe.quantity);
+                     end if;
+                 end loop;
+                 close c_ingredients;
+             end loop;
+             close c_recipe;
+      dbms_output.put_line('Total Nutrition:');
+      dbms_output.put_line('fat:'||fat||'  Carb:'||Carb||'  fiber:'||fiber||'  protein:'||protein||'  calories:'||calory);
+end;
+declare 
+begin
+  disp_nutri('f1001');
+end;
